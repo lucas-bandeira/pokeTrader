@@ -67,15 +67,31 @@ export const Content = styled.div`
   align-items: center;
   justify-content: center;
   background-color: lightgrey;
+  display: grid;
+  grid-template-columns: auto auto auto;
+`;
+
+export const Card = styled.div`
+  height: 50px;
+  display: flex;
+  margin: 15px;
+  border-radius: 0.5rem;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.2);
+  background-color: white;
+  border: 1px solid rgba(0, 0, 0, 0.8);
+  padding: 20px;
+  text-align: center;
 `;
 
 export const PokemonContainer = styled.div`
-  height: 100%;
+  height: fit-content;
   width: 7rem;
   margin: 15px;
   border-radius: 0.5rem;
+  box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.2);
   background-color: white;
-
 `;
 
 export const SearchBox = styled.div`
@@ -109,14 +125,9 @@ export const TradeButton = styled.button`
   }
 `;
 export const ConfirmButton = styled.button`
-  height: fit-content;
-  width: fit-content;
   padding: 5px;
-  position: absolute;
   right: 0;
-  margin-right: 20px;
-  margin-left: 10px;
-  border-radius: 1rem;
+  border-radius: 0.5rem;
   color: #FFF;
   font-size: 12px;
   font-weight: bold;
