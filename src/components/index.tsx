@@ -1,7 +1,7 @@
 import React from 'react';
 
 import api from '../services/api';
-import Swal from 'sweetalert2'
+import Swal from 'sweetalert2';
 
 import { FaSearch, FaTrash } from 'react-icons/fa';
 
@@ -25,6 +25,7 @@ interface IPokemon {
 
 interface ISprites {
     id: number;
+    base_experience: number;
     url: string;
 }
 
@@ -45,7 +46,6 @@ export function Pokemons(){
                 console.log('salvei: ', response.data.results);
                 setPokemons(response.data.results);
             }
-
         }
         getPokemons();
     }, []);
@@ -118,8 +118,9 @@ export function Pokemons(){
         try{
             setSearchMessageLeft(false);
             const response = await api.get(`${pokemonName}`);
-            const pokemonData = {
+            const pokemonData: ISprites = {
                 id: new Date().getTime(),
+                base_experience: response.data.base_experience,
                 url: response.data.sprites.front_default
             }
             if(spritesLeft.length > 5) return;
@@ -132,6 +133,7 @@ export function Pokemons(){
         const response = await api.get(`${pokemonUrl}`);
         const pokemonData = {
             id: new Date().getTime(),
+            base_experience: response.data.base_experience,
             url: response.data.sprites.front_default
         }
         if(spritesLeft.length > 5) return;
@@ -144,6 +146,7 @@ export function Pokemons(){
             const response = await api.get(`${pokemonName}`);
             const pokemonData = {
                 id: new Date().getTime(),
+                base_experience: response.data.base_experience,
                 url: response.data.sprites.front_default
             }
             if(spritesRight.length > 5) return;
@@ -157,6 +160,7 @@ export function Pokemons(){
         const response = await api.get(`${pokemonUrl}`);
         const pokemonData = {
             id: new Date().getTime(),
+            base_experience: response.data.base_experience,
             url: response.data.sprites.front_default
         }
 
