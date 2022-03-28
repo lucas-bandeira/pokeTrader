@@ -72,6 +72,9 @@ export const Content = styled.div`
   background-color: lightgrey;
   display: grid;
   grid-template-columns: auto auto auto;
+  @media(max-width: 1380px) {
+    width: 300px;
+  }
 `;
 
 export const Card = styled.div`
@@ -99,9 +102,16 @@ export const PokemonContainer = styled.div`
 `;
 
 export const HistoryContainer = styled.div`
-  height: fit-content;
-  width: 7rem;
+  height: 8rem;
+  width: fit-content;
+  display: flex;
+  flex-direction: row;
+  padding: 10px;
   margin: 15px;
+  color: #000;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
   border-radius: 0.5rem;
   box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.2);
   background-color: white;

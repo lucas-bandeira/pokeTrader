@@ -12,7 +12,7 @@ import {
     ConfirmButton,
     Container,
     Content, ExternalCircle,
-    Header, MiddleCircle,
+    Header, HistoryContainer, MiddleCircle,
     MiddleContainer, PokemonContainer,
     Search,
     SearchBox,
@@ -477,37 +477,43 @@ export function Pokemons() {
                 </div>
             </Container>
             <hr/>
-            <div style={{backgroundColor: '#f5f5f5', width: '100%' , height: '150px', padding: '15px', display: 'flex', flexDirection: 'row', overflowX: 'scroll', overflowY: 'hidden'}}>
-                <div>
-                    <h1>History</h1>
+            <div style={{backgroundColor: '#f5f5f5', width: '100%' , display: 'flex', flexDirection: 'column'}}>
+                <div >
+                    <h1 style={{textAlign: 'center'}}>History</h1>
                 </div>
-                {
-                    history.map(item => {
-                        const pokeLeft = item.pokeLeft.split(',');
-                        const pokeRight = item.pokeRight.split(',');
+                <div style={{ width: '100%' , display: 'flex', flexDirection: 'row', overflowX: 'scroll', overflowY: 'hidden'}}>
+                    {
+                        history.map(item => {
+                            const pokeLeft = item.pokeLeft.split(',');
+                            const pokeRight = item.pokeRight.split(',');
 
-                        return (
-                            <PokemonContainer>
-                                <ul style={{listStyleType: 'none'}}>
-                                    {pokeLeft.map(poke => {
-                                        return (
-                                            <li>{poke}</li>
-                                        )
-                                    })}
-                                </ul>
-                                <MdOutlineCompareArrows/>
-                                <ul style={{listStyleType: 'none'}}>
-                                    {pokeRight.map(poke => {
-                                        return (
-                                            <li>{poke}</li>
-                                        )
-                                    })}
-                                </ul>
-                            </PokemonContainer>
-                        )
+                            return (
+                                <HistoryContainer>
+                                    <ul style={{listStyleType: 'none'}}>
+                                        {pokeLeft.map(poke => {
+                                            return (
+                                                <li style={{margin:'2px 0'}}>{poke}</li>
+                                            )
+                                        })}
+                                    </ul>
+                                    <div style={{margin:'0 20px '}} >
+                                        <MdOutlineCompareArrows />
 
-                    })
-                }
+                                    </div>
+                                    <ul style={{listStyleType: 'none', alignItems:'center', justifyContent:'center',}}>
+                                        {pokeRight.map(poke => {
+                                            return (
+                                                <li style={{margin:'2px 0'}}>{poke}</li>
+                                            )
+                                        })}
+                                    </ul>
+
+                                </HistoryContainer>
+                            )
+                        })
+                    }
+                </div>
+
             </div>
 
         </>
