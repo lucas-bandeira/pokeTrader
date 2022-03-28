@@ -15,7 +15,7 @@ export const MiddleContainer = styled.div`
   position: relative;
 `;
 
-export const ExternalCircle = styled.button`
+export const ExternalCircle = styled.div`
   height: 110px;
   position: absolute;
   right: 47%;

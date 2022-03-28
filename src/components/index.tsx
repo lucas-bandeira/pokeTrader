@@ -68,10 +68,8 @@ export function Pokemons() {
 
     React.useEffect(() => {
         async function getPokemons() {
-            console.log('tamanho:', pokemons.length)
             if (pokemons.length === 0) {
                 const response = await api.get('?limit=10&offset=20');
-                console.log('salvei: ', response.data.results);
                 setPokemons(response.data.results);
             }
         }
@@ -177,6 +175,7 @@ export function Pokemons() {
 
         if (FileIndex >= 0) {
             updatedPokemons.splice(FileIndex, 1);
+
             setBaseExperienceRight(updatedPokemons);
         }
     }
@@ -280,21 +279,33 @@ export function Pokemons() {
     }
 
     React.useEffect(() => {
-        let experienceLeft = 0;
-        let experienceRight = 0;
+        var experienceLeft = 0;
+        var experienceRight = 0;
 
-        for (let i = 0; i < baseExperienceLeft.length; i++) {
-            let baseNumberLeft = Number(baseExperienceLeft[i].base_experience);
+        if (baseExperienceLeft.length != 0) {
+            for (let i = 0; i < baseExperienceLeft.length; i++) {
+                let baseNumberLeft = Number(baseExperienceLeft[i].base_experience);
 
-            experienceLeft += baseNumberLeft;
-            setTotalExperienceLeft(experienceLeft);
+                experienceLeft += baseNumberLeft;
+                setTotalExperienceLeft(experienceLeft);
+            }
+        } else {
+            setTotalExperienceLeft(0)
         }
 
-        for (let i = 0; i < baseExperienceRight.length; i++) {
-            let baseNumberRight = Number(baseExperienceRight[i].base_experience);
+        if (baseExperienceRight.length != 0) {
+            for (let i = 0; i < baseExperienceRight.length; i++) {
+                let baseNumberRight = Number(baseExperienceRight[i].base_experience);
 
-            experienceRight += baseNumberRight;
-            setTotalExperienceRight(experienceRight);
+                experienceRight += baseNumberRight;
+                setTotalExperienceRight(experienceRight);
+            }
+        } else {
+            setTotalExperienceRight(0);
+        }
+
+        if(baseExperienceRight.length == 0 && baseExperienceRight.length == 0){
+            setTotalExperience(0)
         }
 
         let diference = Math.abs(experienceLeft - experienceRight);
@@ -306,7 +317,7 @@ export function Pokemons() {
             setCanTrade(true);
         }
 
-    }, [spritesLeft, spritesRight])
+    }, [totalExperience,spritesLeft, spritesRight])
 
     async function trade() {
         try{
@@ -501,7 +512,7 @@ export function Pokemons() {
                             const pokeRight = item.pokeRight.split(',');
 
                             return (
-                                <HistoryContainer>
+                                <HistoryContainer key={item.tradedAt}>
                                     <ul style={{listStyleType: 'none'}}>
                                         {pokeLeft.map(poke => {
                                             return (
