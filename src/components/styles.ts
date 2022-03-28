@@ -102,7 +102,8 @@ export const PokemonContainer = styled.div`
 `;
 
 export const HistoryContainer = styled.div`
-  height: 8rem;
+  min-height: 8rem;
+  height: 100%;
   width: fit-content;
   display: flex;
   flex-direction: row;

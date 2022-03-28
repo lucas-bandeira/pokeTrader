@@ -89,7 +89,7 @@ export function Pokemons() {
         getHistory();
     }, [totalExperience]);
 
-    function removePokemonLeft(imageId: number) {
+    function removePokemonLeft(pokemonId: number) {
         try {
 
             Swal.fire({
@@ -102,15 +102,15 @@ export function Pokemons() {
                 confirmButtonText: 'Yes, delete it!'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    const updatedFiles = [...spritesLeft];
-                    const FileIndex = updatedFiles.findIndex(image => image.id === imageId);
+                    const updatedPokemons = [...spritesLeft];
+                    const FileIndex = updatedPokemons.findIndex(pokemon => pokemon.id === pokemonId);
 
                     if (FileIndex >= 0) {
-                        updatedFiles.splice(FileIndex, 1);
-                        setSpritesLeft(updatedFiles);
+                        updatedPokemons.splice(FileIndex, 1);
+                        setSpritesLeft(updatedPokemons);
                     }
 
-                    removePokemonExperience(imageId);
+                    removePokemonExperienceLeft(pokemonId);
 
                     Swal.fire(
                         'Deleted!',
@@ -125,18 +125,18 @@ export function Pokemons() {
         }
     }
 
-    function removePokemonExperience(imageId: number) {
-        const updatedFiles = [...baseExperienceLeft];
-        const FileIndex = updatedFiles.findIndex(image => image.id === imageId);
+    function removePokemonExperienceLeft(pokemonId: number) {
+        const updatedPokemons = [...baseExperienceLeft];
+        const FileIndex = updatedPokemons.findIndex(pokemon => pokemon.id === pokemonId);
 
         if (FileIndex >= 0) {
-            updatedFiles.splice(FileIndex, 1);
-            setBaseExperienceLeft(updatedFiles);
+            updatedPokemons.splice(FileIndex, 1);
+            setBaseExperienceLeft(updatedPokemons);
         }
 
     }
 
-    function removePokemonRight(imageId: number) {
+    function removePokemonRight(pokemonId: number) {
         try {
             Swal.fire({
                 title: 'Are you sure?',
@@ -148,13 +148,16 @@ export function Pokemons() {
                 confirmButtonText: 'Yes, delete it!'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    const updatedFiles = [...spritesRight];
-                    const FileIndex = updatedFiles.findIndex(image => image.id === imageId);
+                    const updatedPokemons = [...spritesRight];
+                    const FileIndex = updatedPokemons.findIndex(pokemon => pokemon.id === pokemonId);
 
                     if (FileIndex >= 0) {
-                        updatedFiles.splice(FileIndex, 1);
-                        setSpritesRight(updatedFiles);
+                        updatedPokemons.splice(FileIndex, 1);
+                        setSpritesRight(updatedPokemons);
                     }
+
+                    removePokemonExperienceRight(pokemonId);
+
                     Swal.fire(
                         'Deleted!',
                         'Your Pokemon has been deleted.',
@@ -165,6 +168,25 @@ export function Pokemons() {
 
         } catch (e) {
             console.log(e);
+        }
+    }
+
+    function removePokemonExperienceRight(pokemonId: number) {
+        const updatedPokemons = [...baseExperienceRight];
+        const FileIndex = updatedPokemons.findIndex(pokemon => pokemon.id === pokemonId);
+
+        if (FileIndex >= 0) {
+            updatedPokemons.splice(FileIndex, 1);
+            setBaseExperienceRight(updatedPokemons);
+        }
+
+        let experienceRight = 0;
+
+        for (let i = 0; i < updatedPokemons.length; i++) {
+            let baseNumberRight = Number(updatedPokemons[i].base_experience);
+
+            experienceRight += baseNumberRight;
+            setTotalExperienceRight(experienceRight);
         }
     }
 
@@ -211,7 +233,7 @@ export function Pokemons() {
         if (spritesLeft.length > 5) return;
         setPokemonsNameLeft([...pokemonsNameLeft, response.data.forms[0].name]);
         setSpritesLeft([...spritesLeft, pokemonData]);
-        setBaseExperienceLeft([...baseExperienceLeft, experienceData])
+        setBaseExperienceLeft([...baseExperienceLeft, experienceData]);
     }
 
     async function getPokemonImageRight(pokemonName: string) {
@@ -235,7 +257,7 @@ export function Pokemons() {
 
             setPokemonsNameRight([...pokemonsNameRight, response.data.forms[0].name]);
             setSpritesRight([...spritesRight, pokemonData]);
-            setBaseExperienceRight([...baseExperienceRight, experienceData])
+            setBaseExperienceRight([...baseExperienceRight, experienceData]);
 
         } catch (e) {
             setSearchMessageRight(true);
@@ -262,7 +284,7 @@ export function Pokemons() {
 
         setPokemonsNameRight([...pokemonsNameRight, response.data.forms[0].name]);
         setSpritesRight([...spritesRight, pokemonData]);
-        setBaseExperienceRight([...baseExperienceRight, experienceData])
+        setBaseExperienceRight([...baseExperienceRight, experienceData]);
 
     }
 
@@ -282,13 +304,12 @@ export function Pokemons() {
 
             experienceRight += baseNumberRight;
             setTotalExperienceRight(experienceRight);
-
         }
 
         let diference = Math.abs(experienceLeft - experienceRight);
         setTotalExperience(diference);
 
-        if (diference >= 100) {
+        if (diference >= 100 || spritesLeft.length == 0 || spritesRight.length == 0) {
             setCanTrade(false);
         } else {
             setCanTrade(true);
@@ -302,7 +323,6 @@ export function Pokemons() {
                 pokeLeft: pokemonsNameLeft,
                 pokeRight: pokemonsNameRight,
             }
-            console.log('pokemonsNameLeft: ', pokemonsNameLeft)
 
             await backend.post('/trades/save',body);
 
@@ -316,6 +336,8 @@ export function Pokemons() {
 
             setSpritesLeft([]);
             setSpritesRight([]);
+            setBaseExperienceLeft([]);
+            setBaseExperienceRight([]);
             setTotalExperienceLeft(0);
             setTotalExperienceRight(0);
             setTotalExperience(0);
@@ -403,7 +425,7 @@ export function Pokemons() {
 
                         <div style={{alignSelf: 'center'}}>
                             <div style={{marginLeft: '15%'}}>
-                                <p style={{marginBottom: '5px'}}>Max Diff: <br/> <b>80 exp</b> </p>
+                                <p style={{marginBottom: '5px'}}>Max Diff: <br/> <b>100 exp</b> </p>
                                 <p style={{marginBottom: '5px'}}>Difference:  <br/> <b>{totalExperience} exp</b> </p>
 
                             </div>
@@ -479,7 +501,7 @@ export function Pokemons() {
             <hr/>
             <div style={{backgroundColor: '#f5f5f5', width: '100%' , display: 'flex', flexDirection: 'column'}}>
                 <div >
-                    <h1 style={{textAlign: 'center'}}>History</h1>
+                    <h1 style={{textAlign: 'center'}}>Trade History</h1>
                 </div>
                 <div style={{ width: '100%' , display: 'flex', flexDirection: 'row', overflowX: 'scroll', overflowY: 'hidden'}}>
                     {
