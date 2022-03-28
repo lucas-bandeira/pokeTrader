@@ -179,15 +179,6 @@ export function Pokemons() {
             updatedPokemons.splice(FileIndex, 1);
             setBaseExperienceRight(updatedPokemons);
         }
-
-        let experienceRight = 0;
-
-        for (let i = 0; i < updatedPokemons.length; i++) {
-            let baseNumberRight = Number(updatedPokemons[i].base_experience);
-
-            experienceRight += baseNumberRight;
-            setTotalExperienceRight(experienceRight);
-        }
     }
 
     async function getPokemonImageLeft(pokemonName: string) {

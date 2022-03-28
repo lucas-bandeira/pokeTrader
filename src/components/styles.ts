@@ -74,6 +74,7 @@ export const Content = styled.div`
   grid-template-columns: auto auto auto;
   @media(max-width: 1380px) {
     width: 300px;
+    grid-template-columns: auto auto ;
   }
 `;
 
