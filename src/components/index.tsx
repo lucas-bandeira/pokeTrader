@@ -44,14 +44,8 @@ interface IHistory{
     tradedAt: string;
 }
 
-interface IPokemonsName {
-    name: string;
-}
-
 export function Pokemons() {
     const [pokemons, setPokemons] = React.useState<IPokemon[]>([]);
-    const [pokemonsNameLeft, setPokemonsNameLeft] = React.useState<IPokemonsName[]>([]);
-    const [pokemonsNameRight, setPokemonsNameRight] = React.useState<IPokemonsName[]>([]);
     const [history,setHistory] = React.useState<IHistory[]>([]);
     const [spritesLeft, setSpritesLeft] = React.useState<ISprites[]>([]);
     const [spritesRight, setSpritesRight] = React.useState<ISprites[]>([]);
@@ -73,8 +67,6 @@ export function Pokemons() {
                 setPokemons(response.data.results);
             }
         }
-
-
         getPokemons();
     }, [canTrade]);
 
@@ -186,7 +178,7 @@ export function Pokemons() {
             const response = await api.get(`${pokemonName}`);
             const pokemonData = {
                 id: new Date().getTime(),
-                name: response.data.forms.name,
+                name: response.data.forms[0].name,
                 base_experience: response.data.base_experience,
                 url: response.data.sprites.front_default
             }
@@ -198,7 +190,6 @@ export function Pokemons() {
 
             if (spritesLeft.length > 5) return;
 
-            setPokemonsNameLeft([...pokemonsNameLeft, response.data.forms[0].name]);
             setSpritesLeft([...spritesLeft, pokemonData]);
             setBaseExperienceLeft([...baseExperienceLeft, experienceData])
         } catch (e) {
@@ -211,7 +202,7 @@ export function Pokemons() {
 
         const pokemonData = {
             id: new Date().getTime(),
-            name: response.data.forms.name,
+            name: response.data.forms[0].name,
             base_experience: response.data.base_experience,
             url: response.data.sprites.front_default
         }
@@ -221,7 +212,7 @@ export function Pokemons() {
         }
 
         if (spritesLeft.length > 5) return;
-        setPokemonsNameLeft([...pokemonsNameLeft, response.data.forms[0].name]);
+
         setSpritesLeft([...spritesLeft, pokemonData]);
         setBaseExperienceLeft([...baseExperienceLeft, experienceData]);
     }
@@ -233,7 +224,7 @@ export function Pokemons() {
 
             const pokemonData = {
                 id: new Date().getTime(),
-                name: response.data.forms.name,
+                name: response.data.forms[0].name,
                 base_experience: response.data.base_experience,
                 url: response.data.sprites.front_default
             }
@@ -245,7 +236,6 @@ export function Pokemons() {
 
             if (spritesRight.length > 5) return;
 
-            setPokemonsNameRight([...pokemonsNameRight, response.data.forms[0].name]);
             setSpritesRight([...spritesRight, pokemonData]);
             setBaseExperienceRight([...baseExperienceRight, experienceData]);
 
@@ -260,7 +250,7 @@ export function Pokemons() {
 
         const pokemonData = {
             id: new Date().getTime(),
-            name: response.data.forms.name,
+            name: response.data.forms[0].name,
             base_experience: response.data.base_experience,
             url: response.data.sprites.front_default
         }
@@ -272,15 +262,14 @@ export function Pokemons() {
 
         if (spritesRight.length > 5) return;
 
-        setPokemonsNameRight([...pokemonsNameRight, response.data.forms[0].name]);
         setSpritesRight([...spritesRight, pokemonData]);
         setBaseExperienceRight([...baseExperienceRight, experienceData]);
 
     }
 
     React.useEffect(() => {
-        var experienceLeft = 0;
-        var experienceRight = 0;
+        let experienceLeft = 0;
+        let experienceRight = 0;
 
         if (baseExperienceLeft.length != 0) {
             for (let i = 0; i < baseExperienceLeft.length; i++) {
@@ -304,9 +293,6 @@ export function Pokemons() {
             setTotalExperienceRight(0);
         }
 
-        if(baseExperienceRight.length == 0 && baseExperienceRight.length == 0){
-            setTotalExperience(0)
-        }
 
         let diference = Math.abs(experienceLeft - experienceRight);
         setTotalExperience(diference);
@@ -317,13 +303,24 @@ export function Pokemons() {
             setCanTrade(true);
         }
 
-    }, [totalExperience,spritesLeft, spritesRight])
+    }, [baseExperienceLeft, baseExperienceRight])
 
     async function trade() {
         try{
+
+            let pokeLeft: string[] = [];
+            spritesLeft.map(pokemon => {
+                pokeLeft.push(pokemon.name);
+            })
+
+            let pokeRight: string[] = [];
+            spritesRight.map(pokemon => {
+                pokeRight.push(pokemon.name);
+            })
+
             const body = {
-                pokeLeft: pokemonsNameLeft,
-                pokeRight: pokemonsNameRight,
+                pokeLeft: pokeLeft,
+                pokeRight: pokeRight,
             }
 
             await backend.post('/trades/save',body);
