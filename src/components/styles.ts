@@ -98,6 +98,15 @@ export const PokemonContainer = styled.div`
   background-color: white;
 `;
 
+export const HistoryContainer = styled.div`
+  height: fit-content;
+  width: 7rem;
+  margin: 15px;
+  border-radius: 0.5rem;
+  box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.2);
+  background-color: white;
+`;
+
 export const SearchBox = styled.div`
   display: flex;
   align-items: flex-start;
