@@ -1,9 +1,11 @@
 import React from 'react';
 
 import api from '../services/api';
+import backend from '../services/backend';
 import Swal from 'sweetalert2';
 
 import {FaSearch, FaTrash} from 'react-icons/fa';
+import {MdOutlineCompareArrows} from 'react-icons/md';
 
 import {
     Card,
@@ -24,22 +26,40 @@ interface IPokemon {
     url: string;
 }
 
-interface IBase{
+interface IBase {
+    id: number;
     base_experience: number;
 }
 
 interface ISprites {
     id: number;
+    name: string;
     base_experience: number;
     url: string;
 }
 
+interface IHistory{
+    pokeLeft: string;
+    pokeRight: string;
+    tradedAt: string;
+}
+
+interface IPokemonsName {
+    name: string;
+}
+
 export function Pokemons() {
     const [pokemons, setPokemons] = React.useState<IPokemon[]>([]);
+    const [pokemonsNameLeft, setPokemonsNameLeft] = React.useState<IPokemonsName[]>([]);
+    const [pokemonsNameRight, setPokemonsNameRight] = React.useState<IPokemonsName[]>([]);
+    const [history,setHistory] = React.useState<IHistory[]>([]);
     const [spritesLeft, setSpritesLeft] = React.useState<ISprites[]>([]);
     const [spritesRight, setSpritesRight] = React.useState<ISprites[]>([]);
     const [baseExperienceLeft, setBaseExperienceLeft] = React.useState<IBase[]>([]);
     const [baseExperienceRight, setBaseExperienceRight] = React.useState<IBase[]>([]);
+    const [totalExperienceLeft, setTotalExperienceLeft] = React.useState<Number>(0);
+    const [totalExperienceRight, setTotalExperienceRight] = React.useState<Number>(0);
+    const [totalExperience, setTotalExperience] = React.useState<Number>(0);
     const [searchLeft, setSearchLeft] = React.useState('');
     const [searchRight, setSearchRight] = React.useState('');
     const [searchMessageLeft, setSearchMessageLeft] = React.useState(false);
@@ -56,8 +76,18 @@ export function Pokemons() {
             }
         }
 
+
         getPokemons();
-    }, []);
+    }, [canTrade]);
+
+    React.useEffect(() => {
+        async function getHistory() {
+            const response = await backend.get('/trades');
+            setHistory(response.data);
+        }
+
+        getHistory();
+    }, [totalExperience]);
 
     function removePokemonLeft(imageId: number) {
         try {
@@ -79,6 +109,9 @@ export function Pokemons() {
                         updatedFiles.splice(FileIndex, 1);
                         setSpritesLeft(updatedFiles);
                     }
+
+                    removePokemonExperience(imageId);
+
                     Swal.fire(
                         'Deleted!',
                         'Your pokemon has been deleted.',
@@ -90,6 +123,17 @@ export function Pokemons() {
         } catch (e) {
             console.log(e);
         }
+    }
+
+    function removePokemonExperience(imageId: number) {
+        const updatedFiles = [...baseExperienceLeft];
+        const FileIndex = updatedFiles.findIndex(image => image.id === imageId);
+
+        if (FileIndex >= 0) {
+            updatedFiles.splice(FileIndex, 1);
+            setBaseExperienceLeft(updatedFiles);
+        }
+
     }
 
     function removePokemonRight(imageId: number) {
@@ -130,13 +174,21 @@ export function Pokemons() {
             const response = await api.get(`${pokemonName}`);
             const pokemonData = {
                 id: new Date().getTime(),
+                name: response.data.forms.name,
                 base_experience: response.data.base_experience,
                 url: response.data.sprites.front_default
             }
 
+            const experienceData = {
+                id: pokemonData.id,
+                base_experience: response.data.base_experience
+            }
+
             if (spritesLeft.length > 5) return;
+
+            setPokemonsNameLeft([...pokemonsNameLeft, response.data.forms[0].name]);
             setSpritesLeft([...spritesLeft, pokemonData]);
-            setBaseExperienceLeft([...baseExperienceLeft, pokemonData.base_experience])
+            setBaseExperienceLeft([...baseExperienceLeft, experienceData])
         } catch (e) {
             setSearchMessageLeft(true);
         }
@@ -144,30 +196,46 @@ export function Pokemons() {
 
     async function getPokemonDataLeft(pokemonUrl: string) {
         const response = await api.get(`${pokemonUrl}`);
+
         const pokemonData = {
             id: new Date().getTime(),
+            name: response.data.forms.name,
             base_experience: response.data.base_experience,
             url: response.data.sprites.front_default
         }
+        const experienceData = {
+            id: pokemonData.id,
+            base_experience: response.data.base_experience
+        }
+
         if (spritesLeft.length > 5) return;
+        setPokemonsNameLeft([...pokemonsNameLeft, response.data.forms[0].name]);
         setSpritesLeft([...spritesLeft, pokemonData]);
-        setBaseExperienceLeft([...baseExperienceLeft, pokemonData.base_experience])
+        setBaseExperienceLeft([...baseExperienceLeft, experienceData])
     }
 
     async function getPokemonImageRight(pokemonName: string) {
         try {
             setSearchMessageRight(false);
             const response = await api.get(`${pokemonName}`);
+
             const pokemonData = {
                 id: new Date().getTime(),
+                name: response.data.forms.name,
                 base_experience: response.data.base_experience,
                 url: response.data.sprites.front_default
             }
 
+            const experienceData = {
+                id: pokemonData.id,
+                base_experience: response.data.base_experience
+            }
+
             if (spritesRight.length > 5) return;
 
+            setPokemonsNameRight([...pokemonsNameRight, response.data.forms[0].name]);
             setSpritesRight([...spritesRight, pokemonData]);
-            setBaseExperienceRight([...baseExperienceRight,pokemonData.base_experience])
+            setBaseExperienceRight([...baseExperienceRight, experienceData])
 
         } catch (e) {
             setSearchMessageRight(true);
@@ -177,16 +245,24 @@ export function Pokemons() {
 
     async function getPokemonDataRight(pokemonUrl: string) {
         const response = await api.get(`${pokemonUrl}`);
+
         const pokemonData = {
             id: new Date().getTime(),
+            name: response.data.forms.name,
             base_experience: response.data.base_experience,
             url: response.data.sprites.front_default
         }
 
+        const experienceData = {
+            id: pokemonData.id,
+            base_experience: response.data.base_experience
+        }
+
         if (spritesRight.length > 5) return;
 
+        setPokemonsNameRight([...pokemonsNameRight, response.data.forms[0].name]);
         setSpritesRight([...spritesRight, pokemonData]);
-        setBaseExperienceRight([...baseExperienceRight, pokemonData.base_experience])
+        setBaseExperienceRight([...baseExperienceRight, experienceData])
 
     }
 
@@ -194,31 +270,65 @@ export function Pokemons() {
         let experienceLeft = 0;
         let experienceRight = 0;
 
-        for(let i=0; i < baseExperienceLeft.length; i++){
-            let baseNumberLeft = Number(baseExperienceLeft[i]);
+        for (let i = 0; i < baseExperienceLeft.length; i++) {
+            let baseNumberLeft = Number(baseExperienceLeft[i].base_experience);
 
             experienceLeft += baseNumberLeft;
+            setTotalExperienceLeft(experienceLeft);
         }
 
-        for(let i=0; i < baseExperienceRight.length; i++){
-            let baseNumberRight = Number(baseExperienceRight[i]);
+        for (let i = 0; i < baseExperienceRight.length; i++) {
+            let baseNumberRight = Number(baseExperienceRight[i].base_experience);
 
             experienceRight += baseNumberRight;
+            setTotalExperienceRight(experienceRight);
+
         }
 
         let diference = Math.abs(experienceLeft - experienceRight);
+        setTotalExperience(diference);
 
-        if(diference >= 100){
-            setCanTrade(true);
-        }else{
+        if (diference >= 100) {
             setCanTrade(false);
+        } else {
+            setCanTrade(true);
         }
-    }, [spritesLeft,spritesRight])
 
-    function trade() {
-        alert("trocou");
+    }, [spritesLeft, spritesRight])
+
+    async function trade() {
+        try{
+            const body = {
+                pokeLeft: pokemonsNameLeft,
+                pokeRight: pokemonsNameRight,
+            }
+            console.log('pokemonsNameLeft: ', pokemonsNameLeft)
+
+            await backend.post('/trades/save',body);
+
+            await Swal.fire({
+                title: 'Trade',
+                text: "Success",
+                icon: 'success',
+                confirmButtonColor: '#ff0000',
+                confirmButtonText: 'Cool!'
+            });
+
+            setSpritesLeft([]);
+            setSpritesRight([]);
+            setTotalExperienceLeft(0);
+            setTotalExperienceRight(0);
+            setTotalExperience(0);
+
+        }catch(e){
+            await Swal.fire({
+                title: 'Trade',
+                text: "Failed, Try again",
+                icon: 'error',
+                confirmButtonColor: '#ff0000',
+            });
+        }
     }
-
 
     return (
         <>
@@ -247,10 +357,9 @@ export function Pokemons() {
                         {
                             searchMessageLeft ? <p style={{color: 'red'}}>Digite um pokemon existente</p> : <></>
                         }
-
                     </div>
 
-                    <div style={{marginTop: '30px', marginLeft: '15px'}}>
+                    <div style={{marginTop: '30px',height:'100%'}}>
                         {
                             pokemons.map(pokemon => {
                                 return (
@@ -260,7 +369,7 @@ export function Pokemons() {
                                             <ConfirmButton onClick={() => getPokemonDataLeft(pokemon.url)}>
                                                 Select
                                             </ConfirmButton>
-                                        </Card >
+                                        </Card>
                                     </>
                                 )
                             })
@@ -268,43 +377,73 @@ export function Pokemons() {
                     </div>
                 </div>
 
-                <Content>
-                    {
-                        spritesLeft.map(image => {
-                            return (
-                                <PokemonContainer>
-                                    <img src={image.url} alt='pokemon'/>
-                                    <button style={{border: 'none', cursor: 'pointer'}}
-                                            onClick={() => removePokemonLeft(image.id)}>
-                                        <FaTrash/>
-                                    </button>
-                                </PokemonContainer>
-                            )
-                        })
-                    }
-                </Content>
+                <div style={{display: 'flex', flexDirection: 'column', position: 'relative'}}>
+                    <div style={{display: 'flex', flexDirection: 'row'}}>
+                        <Content style={{position: 'relative'}}>
+                            {
+                                spritesLeft.map(image => {
+                                    return (
+                                        <PokemonContainer key={image.id}>
+                                            <img src={image.url} alt='pokemon'/>
+                                            <button style={{border: 'none', cursor: 'pointer'}}
+                                                    onClick={() => removePokemonLeft(image.id)}>
+                                                <FaTrash/>
+                                            </button>
+                                        </PokemonContainer>
+                                    )
+                                })
+                            }
+                            <p style={{
+                                color: 'black',
+                                fontWeight: 'bold',
+                                position: 'absolute',
+                                bottom: '0'
+                            }}>Experiencia: {totalExperienceLeft} exp</p>
+                        </Content>
 
-                <div style={{alignSelf: 'center'}}>
-                    {
-                        canTrade ? <TradeButton onClick={() => trade()}>Trade</TradeButton> : <TradeButton style={{backgroundColor: 'grey'}} >Trade</TradeButton>
-                    }
+                        <div style={{alignSelf: 'center'}}>
+                            <div style={{marginLeft: '15%'}}>
+                                <p style={{marginBottom: '5px'}}>Max Diff: <br/> <b>80 exp</b> </p>
+                                <p style={{marginBottom: '5px'}}>Difference:  <br/> <b>{totalExperience} exp</b> </p>
+
+                            </div>
+
+                            <div>
+
+                                {
+                                    canTrade ?
+                                        <TradeButton onClick={() => trade()}>Trade</TradeButton>
+                                        :
+                                        <TradeButton style={{backgroundColor: 'grey'}}>Trade</TradeButton>
+                                }
+                            </div>
+
+                        </div>
+
+                        <Content style={{position: 'relative'}}>
+                            {
+                                spritesRight.map(image => {
+                                    return (
+                                        <PokemonContainer key={image.id}>
+                                            <img src={image.url} alt='pokemon'/>
+                                            <button style={{border: 'none', cursor: 'pointer'}}
+                                                    onClick={() => removePokemonRight(image.id)}>
+                                                <FaTrash/>
+                                            </button>
+                                        </PokemonContainer>
+                                    )
+                                })
+                            }
+                            <p style={{
+                                color: 'black',
+                                fontWeight: 'bold',
+                                position: 'absolute',
+                                bottom: '0'
+                            }}>Experiencia: {totalExperienceRight} exp</p>
+                        </Content>
+                    </div>
                 </div>
 
-                <Content>
-                    {
-                        spritesRight.map(image => {
-                            return (
-                                <PokemonContainer>
-                                    <img src={image.url} alt='pokemon'/>
-                                    <button style={{border: 'none', cursor: 'pointer'}}
-                                            onClick={() => removePokemonRight(image.id)}>
-                                        <FaTrash/>
-                                    </button>
-                                </PokemonContainer>
-                            )
-                        })
-                    }
-                </Content>
                 <div>
                     <div>
                         <SearchBox>
@@ -337,7 +476,39 @@ export function Pokemons() {
                     </div>
                 </div>
             </Container>
+            <hr/>
+            <div style={{backgroundColor: '#f5f5f5', width: '100%' , height: '150px', padding: '15px', display: 'flex', flexDirection: 'row', overflowX: 'scroll', overflowY: 'hidden'}}>
+                <div>
+                    <h1>History</h1>
+                </div>
+                {
+                    history.map(item => {
+                        const pokeLeft = item.pokeLeft.split(',');
+                        const pokeRight = item.pokeRight.split(',');
 
+                        return (
+                            <PokemonContainer>
+                                <ul style={{listStyleType: 'none'}}>
+                                    {pokeLeft.map(poke => {
+                                        return (
+                                            <li>{poke}</li>
+                                        )
+                                    })}
+                                </ul>
+                                <MdOutlineCompareArrows/>
+                                <ul style={{listStyleType: 'none'}}>
+                                    {pokeRight.map(poke => {
+                                        return (
+                                            <li>{poke}</li>
+                                        )
+                                    })}
+                                </ul>
+                            </PokemonContainer>
+                        )
+
+                    })
+                }
+            </div>
 
         </>
     );

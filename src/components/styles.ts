@@ -27,6 +27,9 @@ export const ExternalCircle = styled.button`
   background-color: black;
   align-items: center;
   border-style: hidden;
+  @media(max-width: 1380px) {
+    right: 44vw;
+  }
 `;
 
 export const MiddleCircle = styled.button`
@@ -73,8 +76,9 @@ export const Content = styled.div`
 
 export const Card = styled.div`
   height: 50px;
+  width: 100%;
   display: flex;
-  margin: 15px;
+  margin: 15px 0;
   border-radius: 0.5rem;
   align-items: center;
   justify-content: space-between;
