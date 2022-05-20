@@ -38,7 +38,7 @@ interface ISprites {
     url: string;
 }
 
-interface IHistory{
+interface IHistory {
     pokeLeft: string;
     pokeRight: string;
     tradedAt: string;
@@ -46,7 +46,7 @@ interface IHistory{
 
 export function Pokemons() {
     const [pokemons, setPokemons] = React.useState<IPokemon[]>([]);
-    const [history,setHistory] = React.useState<IHistory[]>([]);
+    const [history, setHistory] = React.useState<IHistory[]>([]);
     const [spritesLeft, setSpritesLeft] = React.useState<ISprites[]>([]);
     const [spritesRight, setSpritesRight] = React.useState<ISprites[]>([]);
     const [baseExperienceLeft, setBaseExperienceLeft] = React.useState<IBase[]>([]);
@@ -67,6 +67,7 @@ export function Pokemons() {
                 setPokemons(response.data.results);
             }
         }
+
         getPokemons();
     }, [canTrade]);
 
@@ -79,54 +80,7 @@ export function Pokemons() {
         getHistory();
     }, [totalExperience]);
 
-    function removePokemonLeft(pokemonId: number) {
-        try {
-
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "You won't be able to revert this!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, delete it!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const updatedPokemons = [...spritesLeft];
-                    const FileIndex = updatedPokemons.findIndex(pokemon => pokemon.id === pokemonId);
-
-                    if (FileIndex >= 0) {
-                        updatedPokemons.splice(FileIndex, 1);
-                        setSpritesLeft(updatedPokemons);
-                    }
-
-                    removePokemonExperienceLeft(pokemonId);
-
-                    Swal.fire(
-                        'Deleted!',
-                        'Your pokemon has been deleted.',
-                        'success'
-                    )
-                }
-            })
-
-        } catch (e) {
-            console.log(e);
-        }
-    }
-
-    function removePokemonExperienceLeft(pokemonId: number) {
-        const updatedPokemons = [...baseExperienceLeft];
-        const FileIndex = updatedPokemons.findIndex(pokemon => pokemon.id === pokemonId);
-
-        if (FileIndex >= 0) {
-            updatedPokemons.splice(FileIndex, 1);
-            setBaseExperienceLeft(updatedPokemons);
-        }
-
-    }
-
-    function removePokemonRight(pokemonId: number) {
+    function removePokemon(pokemonId: number,sprites: ISprites[],arraySprites: (spritesArray: ISprites[]) => void,baseExperience: IBase[], experience: (experienceArray: IBase[]) => void) {
         try {
             Swal.fire({
                 title: 'Are you sure?',
@@ -138,15 +92,15 @@ export function Pokemons() {
                 confirmButtonText: 'Yes, delete it!'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    const updatedPokemons = [...spritesRight];
+                    const updatedPokemons = [...sprites];
                     const FileIndex = updatedPokemons.findIndex(pokemon => pokemon.id === pokemonId);
 
                     if (FileIndex >= 0) {
                         updatedPokemons.splice(FileIndex, 1);
-                        setSpritesRight(updatedPokemons);
+                        arraySprites(updatedPokemons);
                     }
 
-                    removePokemonExperienceRight(pokemonId);
+                    removePokemonExperience(pokemonId,baseExperience, experience);
 
                     Swal.fire(
                         'Deleted!',
@@ -161,43 +115,18 @@ export function Pokemons() {
         }
     }
 
-    function removePokemonExperienceRight(pokemonId: number) {
-        const updatedPokemons = [...baseExperienceRight];
+    function removePokemonExperience(pokemonId: number,baseExperience: IBase[], experience: (experienceArray: IBase[]) => void) {
+        const updatedPokemons = [...baseExperience];
         const FileIndex = updatedPokemons.findIndex(pokemon => pokemon.id === pokemonId);
 
         if (FileIndex >= 0) {
             updatedPokemons.splice(FileIndex, 1);
 
-            setBaseExperienceRight(updatedPokemons);
+            experience(updatedPokemons);
         }
     }
 
-    async function getPokemonImageLeft(pokemonName: string) {
-        try {
-            setSearchMessageLeft(false);
-            const response = await api.get(`${pokemonName}`);
-            const pokemonData = {
-                id: new Date().getTime(),
-                name: response.data.forms[0].name,
-                base_experience: response.data.base_experience,
-                url: response.data.sprites.front_default
-            }
-
-            const experienceData = {
-                id: pokemonData.id,
-                base_experience: response.data.base_experience
-            }
-
-            if (spritesLeft.length > 5) return;
-
-            setSpritesLeft([...spritesLeft, pokemonData]);
-            setBaseExperienceLeft([...baseExperienceLeft, experienceData])
-        } catch (e) {
-            setSearchMessageLeft(true);
-        }
-    }
-
-    async function getPokemonDataLeft(pokemonUrl: string) {
+    async function getPokemonData(pokemonUrl: string, sprites: ISprites[], arraySprites: (spritesArray: ISprites[]) => void, experience: IBase[], arrayExperience: (experienceArray: IBase[]) => void) {
         const response = await api.get(`${pokemonUrl}`);
 
         const pokemonData = {
@@ -211,15 +140,15 @@ export function Pokemons() {
             base_experience: response.data.base_experience
         }
 
-        if (spritesLeft.length > 5) return;
+        if (sprites.length > 5) return;
 
-        setSpritesLeft([...spritesLeft, pokemonData]);
-        setBaseExperienceLeft([...baseExperienceLeft, experienceData]);
+        arraySprites([...sprites, pokemonData]);
+        arrayExperience([...experience, experienceData]);
     }
 
-    async function getPokemonImageRight(pokemonName: string) {
+    async function getPokemonImage(pokemonName: string, sprites: ISprites[], arraySprites: (spritesArray: ISprites[]) => void, experience: IBase[], arrayExperience: (experienceArray: IBase[]) => void, message: (a: boolean) => void) {
         try {
-            setSearchMessageRight(false);
+            message(false);
             const response = await api.get(`${pokemonName}`);
 
             const pokemonData = {
@@ -234,36 +163,14 @@ export function Pokemons() {
                 base_experience: response.data.base_experience
             }
 
-            if (spritesRight.length > 5) return;
+            if (sprites.length > 5) return;
 
-            setSpritesRight([...spritesRight, pokemonData]);
-            setBaseExperienceRight([...baseExperienceRight, experienceData]);
+            arraySprites([...sprites, pokemonData]);
+            arrayExperience([...experience, experienceData]);
 
         } catch (e) {
-            setSearchMessageRight(true);
+            message(true);
         }
-
-    }
-
-    async function getPokemonDataRight(pokemonUrl: string) {
-        const response = await api.get(`${pokemonUrl}`);
-
-        const pokemonData = {
-            id: new Date().getTime(),
-            name: response.data.forms[0].name,
-            base_experience: response.data.base_experience,
-            url: response.data.sprites.front_default
-        }
-
-        const experienceData = {
-            id: pokemonData.id,
-            base_experience: response.data.base_experience
-        }
-
-        if (spritesRight.length > 5) return;
-
-        setSpritesRight([...spritesRight, pokemonData]);
-        setBaseExperienceRight([...baseExperienceRight, experienceData]);
 
     }
 
@@ -271,7 +178,7 @@ export function Pokemons() {
         let experienceLeft = 0;
         let experienceRight = 0;
 
-        if (baseExperienceLeft.length != 0) {
+        if (baseExperienceLeft.length !== 0) {
             for (let i = 0; i < baseExperienceLeft.length; i++) {
                 let baseNumberLeft = Number(baseExperienceLeft[i].base_experience);
 
@@ -282,7 +189,7 @@ export function Pokemons() {
             setTotalExperienceLeft(0)
         }
 
-        if (baseExperienceRight.length != 0) {
+        if (baseExperienceRight.length !== 0) {
             for (let i = 0; i < baseExperienceRight.length; i++) {
                 let baseNumberRight = Number(baseExperienceRight[i].base_experience);
 
@@ -297,7 +204,7 @@ export function Pokemons() {
         let diference = Math.abs(experienceLeft - experienceRight);
         setTotalExperience(diference);
 
-        if (diference >= 100 || spritesLeft.length == 0 || spritesRight.length == 0) {
+        if (diference >= 100 || spritesLeft.length === 0 || spritesRight.length === 0) {
             setCanTrade(false);
         } else {
             setCanTrade(true);
@@ -306,7 +213,7 @@ export function Pokemons() {
     }, [baseExperienceLeft, baseExperienceRight])
 
     async function trade() {
-        try{
+        try {
 
             let pokeLeft: string[] = [];
             spritesLeft.map(pokemon => {
@@ -323,7 +230,7 @@ export function Pokemons() {
                 pokeRight: pokeRight,
             }
 
-            await backend.post('/trades/save',body);
+            await backend.post('/trades/save', body);
 
             await Swal.fire({
                 title: 'Trade',
@@ -341,7 +248,7 @@ export function Pokemons() {
             setTotalExperienceRight(0);
             setTotalExperience(0);
 
-        }catch(e){
+        } catch (e) {
             await Swal.fire({
                 title: 'Trade',
                 text: "Failed, Try again",
@@ -371,7 +278,8 @@ export function Pokemons() {
                         <SearchBox>
                             <Search onChange={(e) => setSearchLeft(e.target.value)} type="text"
                                     placeholder='Pesquise por um pokemon'/>
-                            <SearchButton onClick={() => getPokemonImageLeft(searchLeft)}>
+                            <SearchButton
+                                onClick={() => getPokemonImage(searchLeft, spritesLeft, setSpritesLeft, baseExperienceLeft, setBaseExperienceLeft, setSearchMessageLeft)}>
                                 <FaSearch/>
                             </SearchButton>
                         </SearchBox>
@@ -380,14 +288,15 @@ export function Pokemons() {
                         }
                     </div>
 
-                    <div style={{marginTop: '30px',height:'100%'}}>
+                    <div style={{marginTop: '30px', height: '100%'}}>
                         {
                             pokemons.map(pokemon => {
                                 return (
                                     <>
                                         <Card key={pokemon.name}>
                                             {pokemon.name}
-                                            <ConfirmButton onClick={() => getPokemonDataLeft(pokemon.url)}>
+                                            <ConfirmButton
+                                                onClick={() => getPokemonData(pokemon.url, spritesLeft, setSpritesLeft, baseExperienceLeft, setBaseExperienceLeft)}>
                                                 Select
                                             </ConfirmButton>
                                         </Card>
@@ -407,7 +316,7 @@ export function Pokemons() {
                                         <PokemonContainer key={image.id}>
                                             <img src={image.url} alt='pokemon'/>
                                             <button style={{border: 'none', cursor: 'pointer'}}
-                                                    onClick={() => removePokemonLeft(image.id)}>
+                                                    onClick={() => removePokemon(image.id ,spritesLeft,setSpritesLeft,baseExperienceLeft,setBaseExperienceLeft)}>
                                                 <FaTrash/>
                                             </button>
                                         </PokemonContainer>
@@ -424,8 +333,8 @@ export function Pokemons() {
 
                         <div style={{alignSelf: 'center'}}>
                             <div style={{marginLeft: '15%'}}>
-                                <p style={{marginBottom: '5px'}}>Max Diff: <br/> <b>100 exp</b> </p>
-                                <p style={{marginBottom: '5px'}}>Difference:  <br/> <b>{totalExperience} exp</b> </p>
+                                <p style={{marginBottom: '5px'}}>Max Diff: <br/> <b>100 exp</b></p>
+                                <p style={{marginBottom: '5px'}}>Difference: <br/> <b>{totalExperience} exp</b></p>
 
                             </div>
 
@@ -448,7 +357,7 @@ export function Pokemons() {
                                         <PokemonContainer key={image.id}>
                                             <img src={image.url} alt='pokemon'/>
                                             <button style={{border: 'none', cursor: 'pointer'}}
-                                                    onClick={() => removePokemonRight(image.id)}>
+                                                    onClick={() => removePokemon(image.id,spritesRight, setSpritesRight,baseExperienceRight,setBaseExperienceRight)}>
                                                 <FaTrash/>
                                             </button>
                                         </PokemonContainer>
@@ -470,7 +379,8 @@ export function Pokemons() {
                         <SearchBox>
                             <Search onChange={(e) => setSearchRight(e.target.value)} type="text"
                                     placeholder='Pesquise por um pokemon'/>
-                            <SearchButton onClick={() => getPokemonImageRight(searchRight)}>
+                            <SearchButton
+                                onClick={() => getPokemonImage(searchRight, spritesRight, setSpritesRight, baseExperienceRight, setBaseExperienceRight, setSearchMessageRight)}>
                                 <FaSearch/>
                             </SearchButton>
                         </SearchBox>
@@ -486,7 +396,8 @@ export function Pokemons() {
                                     <>
                                         <Card key={pokemon.name}>
                                             {pokemon.name}
-                                            <ConfirmButton onClick={() => getPokemonDataRight(pokemon.url)}>
+                                            <ConfirmButton
+                                                onClick={() => getPokemonData(pokemon.url, spritesRight, setSpritesRight, baseExperienceRight, setBaseExperienceRight)}>
                                                 Select
                                             </ConfirmButton>
                                         </Card>
@@ -498,11 +409,17 @@ export function Pokemons() {
                 </div>
             </Container>
             <hr/>
-            <div style={{backgroundColor: '#f5f5f5', width: '100%' , display: 'flex', flexDirection: 'column'}}>
-                <div >
+            <div style={{backgroundColor: '#f5f5f5', width: '100%', display: 'flex', flexDirection: 'column'}}>
+                <div>
                     <h1 style={{textAlign: 'center'}}>Trade History</h1>
                 </div>
-                <div style={{ width: '100%' , display: 'flex', flexDirection: 'row', overflowX: 'scroll', overflowY: 'hidden'}}>
+                <div style={{
+                    width: '100%',
+                    display: 'flex',
+                    flexDirection: 'row',
+                    overflowX: 'scroll',
+                    overflowY: 'hidden'
+                }}>
                     {
                         history.map(item => {
                             const pokeLeft = item.pokeLeft.split(',');
@@ -513,18 +430,22 @@ export function Pokemons() {
                                     <ul style={{listStyleType: 'none'}}>
                                         {pokeLeft.map(poke => {
                                             return (
-                                                <li style={{margin:'2px 0'}}>{poke}</li>
+                                                <li style={{margin: '2px 0'}}>{poke}</li>
                                             )
                                         })}
                                     </ul>
-                                    <div style={{margin:'0 20px '}} >
-                                        <MdOutlineCompareArrows />
+                                    <div style={{margin: '0 20px '}}>
+                                        <MdOutlineCompareArrows/>
 
                                     </div>
-                                    <ul style={{listStyleType: 'none', alignItems:'center', justifyContent:'center',}}>
+                                    <ul style={{
+                                        listStyleType: 'none',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                    }}>
                                         {pokeRight.map(poke => {
                                             return (
-                                                <li style={{margin:'2px 0'}}>{poke}</li>
+                                                <li style={{margin: '2px 0'}}>{poke}</li>
                                             )
                                         })}
                                     </ul>
