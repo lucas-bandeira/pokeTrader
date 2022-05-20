@@ -80,7 +80,13 @@ export function Pokemons() {
         getHistory();
     }, [totalExperience]);
 
-    function removePokemon(pokemonId: number,sprites: ISprites[],arraySprites: (spritesArray: ISprites[]) => void,baseExperience: IBase[], experience: (experienceArray: IBase[]) => void) {
+    function removePokemon(
+        pokemonId: number,
+        sprites: ISprites[],
+        arraySprites: (spritesArray: ISprites[]) => void,
+        baseExperience: IBase[],
+        experience: (experienceArray: IBase[]) => void
+    ) {
         try {
             Swal.fire({
                 title: 'Are you sure?',
@@ -115,7 +121,11 @@ export function Pokemons() {
         }
     }
 
-    function removePokemonExperience(pokemonId: number,baseExperience: IBase[], experience: (experienceArray: IBase[]) => void) {
+    function removePokemonExperience(
+        pokemonId: number,
+        baseExperience: IBase[],
+        experience: (experienceArray: IBase[]) => void
+    ) {
         const updatedPokemons = [...baseExperience];
         const FileIndex = updatedPokemons.findIndex(pokemon => pokemon.id === pokemonId);
 
@@ -126,7 +136,12 @@ export function Pokemons() {
         }
     }
 
-    async function getPokemonData(pokemonUrl: string, sprites: ISprites[], arraySprites: (spritesArray: ISprites[]) => void, experience: IBase[], arrayExperience: (experienceArray: IBase[]) => void) {
+    async function getPokemonData(
+        pokemonUrl: string, sprites: ISprites[],
+        arraySprites: (spritesArray: ISprites[]) => void,
+        experience: IBase[],
+        arrayExperience: (experienceArray: IBase[]) => void
+    ) {
         const response = await api.get(`${pokemonUrl}`);
 
         const pokemonData = {
@@ -146,7 +161,13 @@ export function Pokemons() {
         arrayExperience([...experience, experienceData]);
     }
 
-    async function getPokemonImage(pokemonName: string, sprites: ISprites[], arraySprites: (spritesArray: ISprites[]) => void, experience: IBase[], arrayExperience: (experienceArray: IBase[]) => void, message: (a: boolean) => void) {
+    async function getPokemonImage(
+        pokemonName: string, sprites: ISprites[],
+        arraySprites: (spritesArray: ISprites[]) => void,
+        experience: IBase[],
+        arrayExperience: (experienceArray: IBase[]) => void,
+        message: (a: boolean) => void
+    ) {
         try {
             message(false);
             const response = await api.get(`${pokemonName}`);
